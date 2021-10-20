@@ -139,7 +139,7 @@ print(json.dumps(res, ensure_ascii=False, indent=True))
 
 调整的参数和模型在ner_constant.py中
 
-** 训练 **
+**训练**
 
 python3 train_ner.py
 
@@ -170,7 +170,7 @@ my_pred.predict_file("my_test.txt","outt.txt")
 
 调整的参数和模型在cws_constant.py中
 
-** 训练 **
+**训练**
 
 python3 train_cws.py
 
