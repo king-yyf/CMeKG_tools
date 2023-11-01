@@ -42,7 +42,7 @@ class config:
 class IterableDataset(torch.utils.data.IterableDataset):
     def __init__(self, data, random):
         super(IterableDataset).__init__()
-        self.data = data
+        self.data = data  # 就是一个dict组成的list dict: {'text':'', 'sop_list': [[S1,P1,O1],[S2,P2,O2],[S3,P3,O3]..]}
         self.random = random
         self.tokenizer = config.tokenizer
 
@@ -61,39 +61,39 @@ class IterableDataset(torch.utils.data.IterableDataset):
         if self.random:
             np.random.shuffle(idxs)
         batch_size = config.batch_size
-        max_seq_len = config.max_seq_len
+        max_seq_len = config.max_seq_len  # 一个text最大长度 = 256
         num_p = config.num_p
-        batch_token_ids = np.zeros((batch_size, max_seq_len), dtype=np.int)  # (m * max_seq_len)
-        batch_mask_ids = np.zeros((batch_size, max_seq_len), dtype=np.int)  # (m * max_seq_len)
-        batch_segment_ids = np.zeros((batch_size, max_seq_len), dtype=np.int)  # (m * max_seq_len)
-        batch_subject_ids = np.zeros((batch_size, 2), dtype=np.int)  # (m * 2)
+        batch_token_ids = np.zeros((batch_size, max_seq_len), dtype=np.int)  # (m * max_seq_len)  m个text
+        batch_mask_ids = np.zeros((batch_size, max_seq_len), dtype=np.int)  # (m * max_seq_len) 每个text是否参与attention
+        batch_segment_ids = np.zeros((batch_size, max_seq_len), dtype=np.int)  # (m * max_seq_len) 没懂
+        batch_subject_ids = np.zeros((batch_size, 2), dtype=np.int)  # (m * 2) 一个主体的id (start, end)
         batch_subject_labels = np.zeros((batch_size, max_seq_len, 2), dtype=np.int)  # (m * max_seq_len * 2)
-        batch_object_labels = np.zeros((batch_size, max_seq_len, num_p, 2), dtype=np.int)  # (m * max_seq_len * num_p * 2)
-        batch_i = 0
-        for i in idxs:  # 对于每一个id（样本）
-            text = self.data[i]['text']  # 拿到text
+        batch_object_labels = np.zeros((batch_size, max_seq_len, num_p, 2), dtype=np.int)  # (m * max_seq_len * num_p * 2) 对于一个确定的主体，客体是什么
+        batch_i = 0  # batch内的id
+        for i in idxs:  # 对于每一个id（样本）开始赋值上面的对象(循环batch_size次就退出，所以不会for完整个len(data))
+            text = self.data[i]['text']  # 拿到i的text
             batch_token_ids[batch_i, :] = self.tokenizer.encode(text, max_length=max_seq_len, pad_to_max_length=True,
                                                                 add_special_tokens=True)  # 用tokenizer生成了一个 1 * max_seq_len 的向量代表text，塞入batch_token_ids
-            batch_mask_ids[batch_i, :len(text) + 2] = 1  # 同样对batch_mask_ids位置，也做一个标记
-            spo_list = self.data[i]['spo_list']  # 拿到i的标签,spo_list是这个text里面的关系数量r_n
-            idx = np.random.randint(0, len(spo_list), size=1)[0]  # idx 是从 0（包括）到len(spo_list)（不包括）之间的一个随机整数
-            s_rand = self.tokenizer.encode(spo_list[idx][0])[1:-1]  # 用tokenizer处理spo_list[idx]这个关系的第一个entity(s)
-            s_rand_idx = self.search(list(batch_token_ids[batch_i, :]), s_rand)  # 找到这个entity在text原文中的位置
-            batch_subject_ids[batch_i, :] = [s_rand_idx, s_rand_idx + len(s_rand) - 1]  # 记录这个entity在text里面的start和end
+            batch_mask_ids[batch_i, :len(text) + 2] = 1  # 同样对batch_mask_ids位置，也全部标记为1
+            spo_list = self.data[i]['spo_list']  # 拿到i的spo_list, spo_list是这个text里面的关系列表: 'sop_list': [[S1,P1,O1],[S2,P2,O2],[S3,P3,O3]..]
+            idx = np.random.randint(0, len(spo_list), size=1)[0]  # idx 是从 0（包括）到len(spo_list)（不包括）之间的一个随机整数 （相当于随机选一个spo）       对于一个text，会不会一些S对应的sop没用来训练？
+            s_rand = self.tokenizer.encode(spo_list[idx][0])[1:-1]  # 用tokenizer encode这个spo的S
+            s_rand_idx = self.search(list(batch_token_ids[batch_i, :]), s_rand)  # 找到这个S在text原文中的起始位置start
+            batch_subject_ids[batch_i, :] = [s_rand_idx, s_rand_idx + len(s_rand) - 1]  # 记录这个S在text里面的start和end，赋值为一个(1,2)的矩阵: [start, end]
             for i in range(len(spo_list)):
-                spo = spo_list[i]   # 拿到第i个关系
-                s = self.tokenizer.encode(spo[0])[1:-1]   # encode这个关系的s
-                p = config.prediction2id[spo[1]]  # 根据spo[1]（关系）从prediction2id拿到一个什么
+                spo = spo_list[i]   # 拿到第i个spo
+                s = self.tokenizer.encode(spo[0])[1:-1]   # encode这个spo的s
+                p = config.prediction2id[spo[1]]  # 从prediction2id拿到一个p的id（23分类的类别）
                 o = self.tokenizer.encode(spo[2])[1:-1]  # encode这个关系的o
-                s_idx = self.search(list(batch_token_ids[batch_i]), s)  # 找到这个s在text原文中的位置
-                o_idx = self.search(list(batch_token_ids[batch_i]), o)  # 找到这个o在text原文中的位置
-                if s_idx != -1 and o_idx != -1:
-                    batch_subject_labels[batch_i, s_idx, 0] = 1  # s_idx为start，=1
-                    batch_subject_labels[batch_i, s_idx + len(s) - 1, 1] = 1 # s_idx+ len(s)为end，=1
-                    if s_idx == s_rand_idx:  # 如果随机选的subject是这次这个subject（啥意思？）
-                        batch_object_labels[batch_i, o_idx, p, 0] = 1  # s_idx为start，=1
-                        batch_object_labels[batch_i, o_idx + len(o) - 1, p, 1] = 1  # s_idx+ len(s)为end，=1
-            batch_i += 1  # 为下一个样本+1
+                s_idx = self.search(list(batch_token_ids[batch_i]), s)  # 找到这个spo的s在text原文中的位置
+                o_idx = self.search(list(batch_token_ids[batch_i]), o)  # 找到这个spo的o在text原文中的位置
+                if s_idx != -1 and o_idx != -1:  # 如果s和o都存在(这一步应该是一个保险操作，如果标注正常则不需要加这个判断)
+                    batch_subject_labels[batch_i, s_idx, 0] = 1  # s_idx为S的start，=1   对于batch内的某一数据batch_i: [batch_i, s_idx, 0] = 1      [标号=数据序号batch_i, 位置=S起点, 是否是起点=0] = 1  '数据序号batch_i这个数据，它在'S起点'是起点'，这件事是true
+                    batch_subject_labels[batch_i, s_idx + len(s) - 1, 1] = 1 # s_idx+ len(s)为S的end，=1            [batch_i, s_idx+len, 1] = 1  [标号=数据序号batch_i, 位置=S终点, 是否是终点=1] = 1  '数据序号batch_i这个数据，它在'S终点'是终点'，这件事是true
+                    if s_idx == s_rand_idx:  # 如果随机选的spo的S是这次这个spo的S
+                        batch_object_labels[batch_i, o_idx, p, 0] = 1               #  [batch_i, o_idx, 0] = 1      [标号=数据序号batch_i, 位置=O起点, 是否是起点=0] = 1  '数据序号batch_i这个数据，它在'O起点'是起点'，这件事是true
+                        batch_object_labels[batch_i, o_idx + len(o) - 1, p, 1] = 1  #  [batch_i, o_idx+len, 1] = 1  [标号=数据序号batch_i, 位置=O终点, 是否是终点=1] = 1  '数据序号batch_i这个数据，它在'O终点'是终点'，这件事是true
+            batch_i += 1  # batch_i++往下走
             if batch_i == batch_size or i == idxs[-1]:  # 如果到batch size了
                 yield batch_token_ids, batch_mask_ids, batch_segment_ids, batch_subject_labels, batch_subject_ids, batch_object_labels
                 batch_token_ids[:, :] = 0
@@ -104,7 +104,7 @@ class IterableDataset(torch.utils.data.IterableDataset):
                 batch_i = 0
 
     def get_stream(self):
-        return cycle(self.process_data())
+        return cycle(self.process_data())  # 一直循环取数据
 
     def __iter__(self):
         return self.get_stream()
@@ -117,14 +117,14 @@ class Model4s(nn.Module):
         for param in self.bert.parameters():
             param.requires_grad = True
         self.dropout = nn.Dropout(p=0.2)
-        self.linear = nn.Linear(in_features=hidden_size, out_features=2, bias=True)
-        self.sigmoid = nn.Sigmoid()
+        self.linear = nn.Linear(in_features=hidden_size, out_features=2, bias=True)  # 全连接输入：768，输出：2
+        self.sigmoid = nn.Sigmoid()  # 2分类
 
-    def forward(self, input_ids, input_mask, segment_ids, hidden_size=768):
+    def forward(self, input_ids, input_mask, segment_ids, hidden_size=768):  # 输入：3个东西
         hidden_states = self.bert(input_ids,
                                   attention_mask=input_mask,
                                   token_type_ids=segment_ids)[0]  # (batch_size, sequence_length, hidden_size)
-        output = self.sigmoid(self.linear(self.dropout(hidden_states))).pow(2)
+        output = self.sigmoid(self.linear(self.dropout(hidden_states))).pow(2)  # sigmoid：对于每一个字，都要2分类，是起/始的概率值
 
         return output, hidden_states
 
@@ -143,12 +143,12 @@ class Model4po(nn.Module):
         for b in range(hidden_states.shape[0]):
             s_start = batch_subject_ids[b][0]
             s_end = batch_subject_ids[b][1]
-            s = hidden_states[b][s_start] + hidden_states[b][s_end]
+            s = hidden_states[b][s_start] + hidden_states[b][s_end]  # S起始特征 + S终止特征
             cue_len = torch.sum(input_mask[b])
             all_s[b, :cue_len, :] = s
         hidden_states += all_s
 
-        output = self.sigmoid(self.linear(self.dropout(hidden_states))).pow(4)
+        output = self.sigmoid(self.linear(self.dropout(hidden_states))).pow(4)  # 预测每一个位置与S的关系
 
         return output  # (batch_size, max_seq_len, num_p*2)
 
@@ -183,7 +183,7 @@ def load_data(path):
 
 
 def loss_fn(pred, target):
-    loss_fct = nn.BCELoss(reduction='none')
+    loss_fct = nn.BCELoss(reduction='none')  # 二分类交叉熵损失
     return loss_fct(pred, target)
 
 
@@ -193,21 +193,21 @@ def train(train_data_loader, model4s, model4po, optimizer):
         model4s.train()   # 训练模式
         model4po.train()  # 训练模式
         train_loss = 0.
-        for bi, batch in enumerate(train_data_loader):
+        for bi, batch in enumerate(train_data_loader):  # batch id 和 这个batch的数据
             if bi >= len(train_data_loader) // config.batch_size:
                 break
-            batch_token_ids, batch_mask_ids, batch_segment_ids, batch_subject_labels, batch_subject_ids, batch_object_labels = batch
-            batch_token_ids = torch.tensor(batch_token_ids, dtype=torch.long)
-            batch_mask_ids = torch.tensor(batch_mask_ids, dtype=torch.long)
+            batch_token_ids, batch_mask_ids, batch_segment_ids, batch_subject_labels, batch_subject_ids, batch_object_labels = batch  # 取数据
+            batch_token_ids = torch.tensor(batch_token_ids, dtype=torch.long)  # batch_token_ids: 就是text中'字'的token化，shape=(m, max_len)
+            batch_mask_ids = torch.tensor(batch_mask_ids, dtype=torch.long)    # batch_mask_ids: 上述batch_token_ids中，把token变成1（掩码），shape=(m, max_len)
             batch_segment_ids = torch.tensor(batch_segment_ids, dtype=torch.long)
-            batch_subject_labels = torch.tensor(batch_subject_labels, dtype=torch.float)
-            batch_object_labels = torch.tensor(batch_object_labels, dtype=torch.float).view(config.batch_size,
+            batch_subject_labels = torch.tensor(batch_subject_labels, dtype=torch.float)  # batch_subject_labels: 这个对于batch里面每一个数据i，S在text中的起点、终点，shape=(m, max_len, 2)  [样本数量, 位置, 起点？终点]
+            batch_object_labels = torch.tensor(batch_object_labels, dtype=torch.float).view(config.batch_size,  # batch_subject_labels: 这个对于batch里面每一个数据i，O在text中的起点、终点，shape=(m, max_len, 2)  [样本数量, 位置, 起点？终点]
                                                                                             config.max_seq_len,
                                                                                             config.num_p * 2)
-            batch_subject_ids = torch.tensor(batch_subject_ids, dtype=torch.int)
+            batch_subject_ids = torch.tensor(batch_subject_ids, dtype=torch.int) # batch_subject_ids: 记录每个样本的的S的start和end位置:[start, end] 一个batch一共m个样本, 所以shape=(m, 2)
 
-            batch_subject_labels_pred, hidden_states = model4s(batch_token_ids, batch_mask_ids, batch_segment_ids)
-            loss4s = loss_fn(batch_subject_labels_pred, batch_subject_labels.to(torch.float32))
+            batch_subject_labels_pred, hidden_states = model4s(batch_token_ids, batch_mask_ids, batch_segment_ids)  # 预测主体：每一个字是起/始的概率
+            loss4s = loss_fn(batch_subject_labels_pred, batch_subject_labels.to(torch.float32))  # 交叉熵损失： batch_subject_labels_pred：预测值； batch_subject_labels：真实label
             loss4s = torch.mean(loss4s, dim=2, keepdim=False) * batch_mask_ids
             loss4s = torch.sum(loss4s)
             loss4s = loss4s / torch.sum(batch_mask_ids)
@@ -366,7 +366,7 @@ def evaluate(data, is_print, model4s, model4po):
 def run_train():
     load_schema(config.PATH_SCHEMA)  # 读所有关系,形成列表和id映射
     train_path = config.PATH_TRAIN
-    all_data = load_data(train_path)  # 形成[(text, spo)]列表
+    all_data = load_data(train_path)  # 形成[(text, spo)]列表，即[{'text':'SxxPxxOxxx', 'sop_list': [['S0','P0','O0'],['S1','P1','O1'],...]}, {'text':'', 'spo_list':[...]} ...]
     random.shuffle(all_data)
 
     # 8:2划分训练集、验证集
