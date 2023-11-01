@@ -190,8 +190,8 @@ def loss_fn(pred, target):
 def train(train_data_loader, model4s, model4po, optimizer):
     for epoch in range(config.EPOCH):
         begin_time = time.time()
-        model4s.train()
-        model4po.train()
+        model4s.train()   # 训练模式
+        model4po.train()  # 训练模式
         train_loss = 0.
         for bi, batch in enumerate(train_data_loader):
             if bi >= len(train_data_loader) // config.batch_size:
@@ -398,7 +398,7 @@ def run_train():
     optimizer = AdamW(optimizer_grouped_parameters, lr=lr)
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-    checkpoint = train(train_data_loader, model4s, model4po, optimizer)
+    checkpoint = train(train_data_loader, model4s, model4po, optimizer)  # 开始训练
 
     del train_data
     gc.collect()
