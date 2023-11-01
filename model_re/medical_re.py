@@ -23,12 +23,12 @@ import re
 class config:
     batch_size = 32
     max_seq_len = 256
-    num_p = 23
+    num_p = 23  # 关系数量
     learning_rate = 1e-5
     EPOCH = 2
 
-    PATH_SCHEMA = "/Users/yangyf/workplace/model/medical_re/predicate.json"
-    PATH_TRAIN = '/Users/yangyf/workplace/model/medical_re/train_data.json'
+    PATH_SCHEMA = "/Users/yangyf/workplace/model/medical_re/predicate.json"  # 应该是关系定义
+    PATH_TRAIN = '/Users/yangyf/workplace/model/medical_re/train_data.json'  # 训练数据
     PATH_BERT = "/Users/yangyf/workplace/model/medical_re/"
     PATH_MODEL = "/Users/yangyf/workplace/model/medical_re/model_re.pkl"
     PATH_SAVE = '/content/model_re.pkl'
@@ -56,45 +56,45 @@ class IterableDataset(torch.utils.data.IterableDataset):
                 return i
         return -1
 
-    def process_data(self):
-        idxs = list(range(len(self.data)))
+    def process_data(self):   # 模型训练的时候才会执行这个函数
+        idxs = list(range(len(self.data)))  # 生成一系列id
         if self.random:
             np.random.shuffle(idxs)
         batch_size = config.batch_size
         max_seq_len = config.max_seq_len
         num_p = config.num_p
-        batch_token_ids = np.zeros((batch_size, max_seq_len), dtype=np.int)
-        batch_mask_ids = np.zeros((batch_size, max_seq_len), dtype=np.int)
-        batch_segment_ids = np.zeros((batch_size, max_seq_len), dtype=np.int)
-        batch_subject_ids = np.zeros((batch_size, 2), dtype=np.int)
-        batch_subject_labels = np.zeros((batch_size, max_seq_len, 2), dtype=np.int)
-        batch_object_labels = np.zeros((batch_size, max_seq_len, num_p, 2), dtype=np.int)
+        batch_token_ids = np.zeros((batch_size, max_seq_len), dtype=np.int)  # (m * max_seq_len)
+        batch_mask_ids = np.zeros((batch_size, max_seq_len), dtype=np.int)  # (m * max_seq_len)
+        batch_segment_ids = np.zeros((batch_size, max_seq_len), dtype=np.int)  # (m * max_seq_len)
+        batch_subject_ids = np.zeros((batch_size, 2), dtype=np.int)  # (m * 2)
+        batch_subject_labels = np.zeros((batch_size, max_seq_len, 2), dtype=np.int)  # (m * max_seq_len * 2)
+        batch_object_labels = np.zeros((batch_size, max_seq_len, num_p, 2), dtype=np.int)  # (m * max_seq_len * num_p * 2)
         batch_i = 0
-        for i in idxs:
-            text = self.data[i]['text']
+        for i in idxs:  # 对于每一个id（样本）
+            text = self.data[i]['text']  # 拿到text
             batch_token_ids[batch_i, :] = self.tokenizer.encode(text, max_length=max_seq_len, pad_to_max_length=True,
-                                                                add_special_tokens=True)
-            batch_mask_ids[batch_i, :len(text) + 2] = 1
-            spo_list = self.data[i]['spo_list']
-            idx = np.random.randint(0, len(spo_list), size=1)[0]
-            s_rand = self.tokenizer.encode(spo_list[idx][0])[1:-1]
-            s_rand_idx = self.search(list(batch_token_ids[batch_i, :]), s_rand)
-            batch_subject_ids[batch_i, :] = [s_rand_idx, s_rand_idx + len(s_rand) - 1]
+                                                                add_special_tokens=True)  # 用tokenizer生成了一个 1 * max_seq_len 的向量代表text，塞入batch_token_ids
+            batch_mask_ids[batch_i, :len(text) + 2] = 1  # 同样对batch_mask_ids位置，也做一个标记
+            spo_list = self.data[i]['spo_list']  # 拿到i的标签,spo_list是这个text里面的关系数量r_n
+            idx = np.random.randint(0, len(spo_list), size=1)[0]  # idx 是从 0（包括）到len(spo_list)（不包括）之间的一个随机整数
+            s_rand = self.tokenizer.encode(spo_list[idx][0])[1:-1]  # 用tokenizer处理spo_list[idx]这个关系的第一个entity(s)
+            s_rand_idx = self.search(list(batch_token_ids[batch_i, :]), s_rand)  # 找到这个entity在text原文中的位置
+            batch_subject_ids[batch_i, :] = [s_rand_idx, s_rand_idx + len(s_rand) - 1]  # 记录这个entity在text里面的start和end
             for i in range(len(spo_list)):
-                spo = spo_list[i]
-                s = self.tokenizer.encode(spo[0])[1:-1]
-                p = config.prediction2id[spo[1]]
-                o = self.tokenizer.encode(spo[2])[1:-1]
-                s_idx = self.search(list(batch_token_ids[batch_i]), s)
-                o_idx = self.search(list(batch_token_ids[batch_i]), o)
+                spo = spo_list[i]   # 拿到第i个关系
+                s = self.tokenizer.encode(spo[0])[1:-1]   # encode这个关系的s
+                p = config.prediction2id[spo[1]]  # 根据spo[1]（关系）从prediction2id拿到一个什么
+                o = self.tokenizer.encode(spo[2])[1:-1]  # encode这个关系的o
+                s_idx = self.search(list(batch_token_ids[batch_i]), s)  # 找到这个s在text原文中的位置
+                o_idx = self.search(list(batch_token_ids[batch_i]), o)  # 找到这个o在text原文中的位置
                 if s_idx != -1 and o_idx != -1:
-                    batch_subject_labels[batch_i, s_idx, 0] = 1
-                    batch_subject_labels[batch_i, s_idx + len(s) - 1, 1] = 1
-                    if s_idx == s_rand_idx:
-                        batch_object_labels[batch_i, o_idx, p, 0] = 1
-                        batch_object_labels[batch_i, o_idx + len(o) - 1, p, 1] = 1
-            batch_i += 1
-            if batch_i == batch_size or i == idxs[-1]:
+                    batch_subject_labels[batch_i, s_idx, 0] = 1  # s_idx为start，=1
+                    batch_subject_labels[batch_i, s_idx + len(s) - 1, 1] = 1 # s_idx+ len(s)为end，=1
+                    if s_idx == s_rand_idx:  # 如果随机选的subject是这次这个subject（啥意思？）
+                        batch_object_labels[batch_i, o_idx, p, 0] = 1  # s_idx为start，=1
+                        batch_object_labels[batch_i, o_idx + len(o) - 1, p, 1] = 1  # s_idx+ len(s)为end，=1
+            batch_i += 1  # 为下一个样本+1
+            if batch_i == batch_size or i == idxs[-1]:  # 如果到batch size了
                 yield batch_token_ids, batch_mask_ids, batch_segment_ids, batch_subject_labels, batch_subject_ids, batch_object_labels
                 batch_token_ids[:, :] = 0
                 batch_mask_ids[:, :] = 0
@@ -155,14 +155,14 @@ class Model4po(nn.Module):
 
 def load_schema(path):
     with open(path, 'r', encoding='utf-8', errors='replace') as f:
-        data = json.load(f)
-        predicate = list(data.keys())
+        data = json.load(f)  # 加载所有"关系"
+        predicate = list(data.keys())  # 把所有关系提取成list
         prediction2id = {}
         id2predicate = {}
         for i in range(len(predicate)):
-            prediction2id[predicate[i]] = i
-            id2predicate[i] = predicate[i]
-    num_p = len(predicate)
+            prediction2id[predicate[i]] = i   # dict: 关系 --> id
+            id2predicate[i] = predicate[i]    # dict: id --> 关系
+    num_p = len(predicate)  # 关系总数量
     config.prediction2id = prediction2id
     config.id2predicate = id2predicate
     config.num_p = num_p
@@ -171,11 +171,11 @@ def load_schema(path):
 def load_data(path):
     text_spos = []
     with open(path, 'r', encoding='utf-8', errors='replace') as f:
-        data = json.load(f)
+        data = json.load(f)  # 读取训练文件
         for item in data:
-            text = item['text']
-            spo_list = item['spo_list']
-            text_spos.append({
+            text = item['text']  # 获取text字段
+            spo_list = item['spo_list']  # 获取spo_list字段
+            text_spos.append({  # 建立 { (text <--> spo_list) } 二元组list
                 'text': text,
                 'spo_list': spo_list
             })
@@ -238,7 +238,7 @@ def train(train_data_loader, model4s, model4po, optimizer):
     }
 
 
-def extract_spoes(text, model4s, model4po):
+def extract_spoes(text, model4s, model4po):   # 使用：提取关系spo
     """
     return: a list of many tuple of (s, p, o)
     """
@@ -364,9 +364,9 @@ def evaluate(data, is_print, model4s, model4po):
 
 
 def run_train():
-    load_schema(config.PATH_SCHEMA)
+    load_schema(config.PATH_SCHEMA)  # 读所有关系,形成列表和id映射
     train_path = config.PATH_TRAIN
-    all_data = load_data(train_path)
+    all_data = load_data(train_path)  # 形成[(text, spo)]列表
     random.shuffle(all_data)
 
     # 8:2划分训练集、验证集
@@ -379,11 +379,11 @@ def run_train():
     num_train_data = len(train_data)
     checkpoint = torch.load(config.PATH_MODEL)
 
-    model4s = Model4s()
+    model4s = Model4s()  # 预测subject(主体)
     model4s.load_state_dict(checkpoint['model4s_state_dict'])
     # model4s.cuda()
 
-    model4po = Model4po()
+    model4po = Model4po()  # 预测predicate(谓语)和object(客体)
     model4po.load_state_dict(checkpoint['model4po_state_dict'])
     # model4po.cuda()
 
@@ -429,7 +429,7 @@ def load_model():
     return model4s, model4po
 
 
-def get_triples(content, model4s, model4po):
+def get_triples(content, model4s, model4po):  # 使用模型
     if len(content) == 0:
         return []
     text_list = content.split('。')[:-1]
