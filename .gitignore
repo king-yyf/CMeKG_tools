@@ -26,6 +26,8 @@ vendor
 *.swo
 *~
 *.tar.gz
+*.pkl
+*.bin
 
 # binary output directories
 _output/

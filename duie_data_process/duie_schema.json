@@ -1,0 +1,48 @@
+{"object_type": {"@value": "学校"}, "predicate": "毕业院校", "subject_type": "人物"}
+{"object_type": {"@value": "人物"}, "predicate": "嘉宾", "subject_type": "电视综艺"}
+{"object_type": {"inWork": "影视作品", "@value": "人物"}, "predicate": "配音", "subject_type": "娱乐人物"}
+{"object_type": {"@value": "歌曲"}, "predicate": "主题曲", "subject_type": "影视作品"}
+{"object_type": {"@value": "人物"}, "predicate": "代言人", "subject_type": "企业/品牌"}
+{"object_type": {"@value": "音乐专辑"}, "predicate": "所属专辑", "subject_type": "歌曲"}
+{"object_type": {"@value": "人物"}, "predicate": "父亲", "subject_type": "人物"}
+{"object_type": {"@value": "人物"}, "predicate": "作者", "subject_type": "图书作品"}
+{"object_type": {"inArea": "地点", "@value": "Date"}, "predicate": "上映时间", "subject_type": "影视作品"}
+{"object_type": {"@value": "人物"}, "predicate": "母亲", "subject_type": "人物"}
+{"object_type": {"@value": "Text"}, "predicate": "专业代码", "subject_type": "学科专业"}
+{"object_type": {"@value": "Number"}, "predicate": "占地面积", "subject_type": "机构"}
+{"object_type": {"@value": "Text"}, "predicate": "邮政编码", "subject_type": "行政区"}
+{"object_type": {"inArea": "地点", "@value": "Number"}, "predicate": "票房", "subject_type": "影视作品"}
+{"object_type": {"@value": "Number"}, "predicate": "注册资本", "subject_type": "企业"}
+{"object_type": {"@value": "人物"}, "predicate": "主角", "subject_type": "文学作品"}
+{"object_type": {"@value": "人物"}, "predicate": "妻子", "subject_type": "人物"}
+{"object_type": {"@value": "人物"}, "predicate": "编剧", "subject_type": "影视作品"}
+{"object_type": {"@value": "气候"}, "predicate": "气候", "subject_type": "行政区"}
+{"object_type": {"@value": "人物"}, "predicate": "歌手", "subject_type": "歌曲"}
+{"object_type": {"inWork": "作品", "onDate": "Date", "@value": "奖项", "period": "Number"}, "predicate": "获奖", "subject_type": "娱乐人物"}
+{"object_type": {"@value": "人物"}, "predicate": "校长", "subject_type": "学校"}
+{"object_type": {"@value": "人物"}, "predicate": "创始人", "subject_type": "企业"}
+{"object_type": {"@value": "城市"}, "predicate": "首都", "subject_type": "国家"}
+{"object_type": {"@value": "人物"}, "predicate": "丈夫", "subject_type": "人物"}
+{"object_type": {"@value": "Text"}, "predicate": "朝代", "subject_type": "历史人物"}
+{"object_type": {"inWork": "影视作品", "@value": "人物"}, "predicate": "饰演", "subject_type": "娱乐人物"}
+{"object_type": {"@value": "Number"}, "predicate": "面积", "subject_type": "行政区"}
+{"object_type": {"@value": "地点"}, "predicate": "总部地点", "subject_type": "企业"}
+{"object_type": {"@value": "地点"}, "predicate": "祖籍", "subject_type": "人物"}
+{"object_type": {"@value": "Number"}, "predicate": "人口数量", "subject_type": "行政区"}
+{"object_type": {"@value": "人物"}, "predicate": "制片人", "subject_type": "影视作品"}
+{"object_type": {"@value": "Number"}, "predicate": "修业年限", "subject_type": "学科专业"}
+{"object_type": {"@value": "城市"}, "predicate": "所在城市", "subject_type": "景点"}
+{"object_type": {"@value": "人物"}, "predicate": "董事长", "subject_type": "企业"}
+{"object_type": {"@value": "人物"}, "predicate": "作词", "subject_type": "歌曲"}
+{"object_type": {"@value": "作品"}, "predicate": "改编自", "subject_type": "影视作品"}
+{"object_type": {"@value": "企业"}, "predicate": "出品公司", "subject_type": "影视作品"}
+{"object_type": {"@value": "人物"}, "predicate": "导演", "subject_type": "影视作品"}
+{"object_type": {"@value": "人物"}, "predicate": "作曲", "subject_type": "歌曲"}
+{"object_type": {"@value": "人物"}, "predicate": "主演", "subject_type": "影视作品"}
+{"object_type": {"@value": "人物"}, "predicate": "主持人", "subject_type": "电视综艺"}
+{"object_type": {"@value": "Date"}, "predicate": "成立日期", "subject_type": "机构"}
+{"object_type": {"@value": "Text"}, "predicate": "简称", "subject_type": "机构"}
+{"object_type": {"@value": "Number"}, "predicate": "海拔", "subject_type": "地点"}
+{"object_type": {"@value": "Text"}, "predicate": "号", "subject_type": "历史人物"}
+{"object_type": {"@value": "国家"}, "predicate": "国籍", "subject_type": "人物"}
+{"object_type": {"@value": "语言"}, "predicate": "官方语言", "subject_type": "国家"}

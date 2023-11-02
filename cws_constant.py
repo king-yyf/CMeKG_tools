@@ -17,5 +17,5 @@ use_cuda = False
 # test_file = './data/test.txt'
 # medical_bert = './data/model_20'
 # vocab_file = './data/model_20/vocab.txt'
-# save_model_dir = './data/model/'
-# medical_tool_model = './data/model/pytorch_model.pkl'  # 最终工具使用的模型
+# save_model_dir = './data/model_to_save/'
+# medical_tool_model = './data/model_to_save/pytorch_model.pkl'  # 最终工具使用的模型

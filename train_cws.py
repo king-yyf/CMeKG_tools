@@ -98,7 +98,7 @@ def evaluate(medel, dev_loader):
         gold_label_1 = [t[1:] for t in gold_label]
         p, r, f = get_f1(gold_label_1, pred_label_1)
         print('p: {}，r: {}, f: {}'.format(p, r, f))
-        # model.train()
+        # model_to_save.train()
         return p, r, f
 
 
@@ -169,7 +169,7 @@ for epoch in range(epochs):
 
 
     if f > best_f:
-        print('epoch'+str(epoch)+'-model saving!!!!!!')
+        print('epoch'+str(epoch)+'-model_to_save saving!!!!!!')
         best_f = f
         _, _, test_f1 = evaluate_test(model, test_loader)
         print("testset's f1: ", test_f1)

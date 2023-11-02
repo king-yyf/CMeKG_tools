@@ -16,8 +16,8 @@ i2l_dic = {0: "o", 1: "d-B", 2: "d-M", 3: "d-E", 4: "s-B", 5: "s-M",
 # test_file = './data/test_data.txt'
 # vocab_file = './data/my_bert/vocab.txt'
 
-# save_model_dir =  './data/model/'
-# medical_tool_model = './data/model/model.pkl'
+# save_model_dir =  './data/model_to_save/'
+# medical_tool_model = './data/model_to_save/model_to_save.pkl'
 max_length = 450
 batch_size = 1
 epochs = 30

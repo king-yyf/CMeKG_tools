@@ -21,18 +21,34 @@ import time
 import re
 
 class config:
-    batch_size = 32
+    # batch_size = 32
+    batch_size = 2
     max_seq_len = 256
-    num_p = 23  # 关系数量
+    # num_p = 23  # 关系数量
+    num_p = 48  # 关系数量
     learning_rate = 1e-5
-    EPOCH = 2
+    EPOCH = 5
 
-    PATH_SCHEMA = "/Users/yangyf/workplace/model/medical_re/predicate.json"  # 应该是关系定义
-    PATH_TRAIN = '/Users/yangyf/workplace/model/medical_re/train_data.json'  # 训练数据
-    PATH_BERT = "/Users/yangyf/workplace/model/medical_re/"
-    PATH_MODEL = "/Users/yangyf/workplace/model/medical_re/model_re.pkl"
-    PATH_SAVE = '/content/model_re.pkl'
-    tokenizer = BertTokenizer.from_pretrained("/Users/yangyf/workplace/model/medical_re/" + 'vocab.txt')
+    # PATH_SCHEMA = "/Users/yangyf/workplace/model_to_save/medical_re/predicate.json"  # 应该是关系定义
+    # PATH_TRAIN = '/Users/yangyf/workplace/model_to_save/medical_re/train_data.json'  # 训练数据
+    # PATH_BERT = "/Users/yangyf/workplace/model_to_save/medical_re/"
+    # PATH_MODEL = "/Users/yangyf/workplace/model_to_save/medical_re/model_re.pkl"
+    # PATH_SAVE = '/content/model_re.pkl'
+    # tokenizer = BertTokenizer.from_pretrained("/Users/yangyf/workplace/model_to_save/medical_re/" + 'vocab.txt')
+
+    PATH_SCHEMA = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\predicate.json"  # 应该是关系定义
+    PATH_TRAIN = 'C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\train.json'  # 训练数据
+    PATH_BERT = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\"
+    PATH_MODEL = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\model_re.pkl"
+    PATH_SAVE = 'C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_to_save\\model_re.pkl'
+    tokenizer = BertTokenizer.from_pretrained("C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\" + 'vocab.txt')
+
+    # PATH_SCHEMA = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\duie_data_process\\predicate_unicode.json"  # 应该是关系定义
+    # PATH_TRAIN = 'C:\\Users\\Aki\\source\\python\\CMeKG_tools\\duie_data_process\\duie_spo_train.json'  # 训练数据
+    # PATH_BERT = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\"
+    # PATH_MODEL = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\model_re.pkl"
+    # PATH_SAVE = 'C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_to_save\\model_re.pkl'
+    # tokenizer = BertTokenizer.from_pretrained("C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\" + 'vocab.txt')
 
     id2predicate = {}
     predicate2id = {}
@@ -63,12 +79,12 @@ class IterableDataset(torch.utils.data.IterableDataset):
         batch_size = config.batch_size
         max_seq_len = config.max_seq_len  # 一个text最大长度 = 256
         num_p = config.num_p
-        batch_token_ids = np.zeros((batch_size, max_seq_len), dtype=np.int)  # (m * max_seq_len)  m个text
-        batch_mask_ids = np.zeros((batch_size, max_seq_len), dtype=np.int)  # (m * max_seq_len) 每个text是否参与attention
-        batch_segment_ids = np.zeros((batch_size, max_seq_len), dtype=np.int)  # (m * max_seq_len) 没懂
-        batch_subject_ids = np.zeros((batch_size, 2), dtype=np.int)  # (m * 2) 一个主体的id (start, end)
-        batch_subject_labels = np.zeros((batch_size, max_seq_len, 2), dtype=np.int)  # (m * max_seq_len * 2)
-        batch_object_labels = np.zeros((batch_size, max_seq_len, num_p, 2), dtype=np.int)  # (m * max_seq_len * num_p * 2) 对于一个确定的主体，客体是什么
+        batch_token_ids = np.zeros((batch_size, max_seq_len), dtype=np.int64)  # (m * max_seq_len)  m个text
+        batch_mask_ids = np.zeros((batch_size, max_seq_len), dtype=np.int64)  # (m * max_seq_len) 每个text是否参与attention
+        batch_segment_ids = np.zeros((batch_size, max_seq_len), dtype=np.int64)  # (m * max_seq_len) 没懂
+        batch_subject_ids = np.zeros((batch_size, 2), dtype=np.int64)  # (m * 2) 一个主体的id (start, end)
+        batch_subject_labels = np.zeros((batch_size, max_seq_len, 2), dtype=np.int64)  # (m * max_seq_len * 2)
+        batch_object_labels = np.zeros((batch_size, max_seq_len, num_p, 2), dtype=np.int64)  # (m * max_seq_len * num_p * 2) 对于一个确定的主体，客体是什么
         batch_i = 0  # batch内的id
         for i in idxs:  # 对于每一个id（样本）开始赋值上面的对象(循环batch_size次就退出，所以不会for完整个len(data))
             text = self.data[i]['text']  # 拿到i的text
@@ -446,13 +462,15 @@ def get_triples(content, model4s, model4po):  # 使用模型
 
 if __name__ == "__main__":
 
-    with open(config.PATH_TRAIN, 'r', encoding="utf-8", errors='replace') as f:
-        data = json.load(f)
+    run_train()
 
-        f1=open("train.json","w")
-
-        json.dump(data,f1,ensure_ascii=False,indent=True)
-        print("finish")
+    # with open(config.PATH_TRAIN, 'r', encoding="utf-8", errors='replace') as f:
+    #     data = json.load(f)
+    #
+    #     f1=open("train.json","w")
+    #
+    #     json.dump(data,f1,ensure_ascii=False,indent=True)
+    #     print("finish")
 
     # load_schema(config.PATH_SCHEMA)
     # model4s, model4po = load_model()

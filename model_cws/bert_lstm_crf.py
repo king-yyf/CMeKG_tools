@@ -5,7 +5,7 @@ from model_cws.crf import CRF
 from torch.autograd import Variable
 import torch
 
-# model = BERT_LSTM_CRF('./data/bert_base_epoch10', tagset_size, 768, 200, 2,
+# model_to_save = BERT_LSTM_CRF('./data/bert_base_epoch10', tagset_size, 768, 200, 2,
 #                       dropout_ratio=0.5, dropout1=0.5, use_cuda = use_cuda)
 class BERT_LSTM_CRF(nn.Module):
     def __init__(self, bert_config, tagset_size, embedding_dim, hidden_dim, rnn_layers, dropout_ratio, dropout1, use_cuda):

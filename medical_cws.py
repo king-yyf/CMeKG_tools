@@ -14,7 +14,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 class medical_seg(object):
     def __init__(self):
-        self.NEWPATH = '/Users/yangyf/workplace/model/medical_cws/pytorch_model.pkl'
+        self.NEWPATH = '/Users/yangyf/workplace/model_to_save/medical_cws/pytorch_model.pkl'
         if torch.cuda.is_available():
             self.device = torch.device("cuda", 0)
             self.use_cuda = True
@@ -22,10 +22,10 @@ class medical_seg(object):
             self.device = torch.device("cpu")
             self.use_cuda = False
 
-        self.vocab = load_vocab('/Users/yangyf/workplace/model/medical_cws/vocab.txt')
+        self.vocab = load_vocab('/Users/yangyf/workplace/model_to_save/medical_cws/vocab.txt')
         self.vocab_reverse = {v: k for k, v in self.vocab.items()}
 
-        self.model = BERT_LSTM_CRF('/Users/yangyf/workplace/model/medical_cws', tagset_size, 768, 200, 2,
+        self.model = BERT_LSTM_CRF('/Users/yangyf/workplace/model_to_save/medical_cws', tagset_size, 768, 200, 2,
                               dropout_ratio=0.5, dropout1=0.5, use_cuda=use_cuda)
 
         if use_cuda:
@@ -101,7 +101,7 @@ class medical_seg(object):
 
         test_dataset = TensorDataset(test_ids, test_masks, test_lengths)
         test_loader = DataLoader(test_dataset, shuffle=False, batch_size=1)
-        # self.model.load_state_dict(torch.load(self.NEWPATH, map_location={'cuda:0': str(self.device)}))
+        # self.model_to_save.load_state_dict(torch.load(self.NEWPATH, map_location={'cuda:0': str(self.device)}))
         self.model.load_state_dict(torch.load(self.NEWPATH,map_location=self.device))
         self.model.eval()
 
