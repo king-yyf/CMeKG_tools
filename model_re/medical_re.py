@@ -36,19 +36,19 @@ class config:
     # PATH_SAVE = '/content/model_re.pkl'
     # tokenizer = BertTokenizer.from_pretrained("/Users/yangyf/workplace/model_to_save/medical_re/" + 'vocab.txt')
 
-    PATH_SCHEMA = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\predicate.json"  # 应该是关系定义
-    PATH_TRAIN = 'C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\train.json'  # 训练数据
-    PATH_BERT = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\"
-    PATH_MODEL = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\model_re.pkl"
-    PATH_SAVE = 'C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_to_save\\model_re.pkl'
-    tokenizer = BertTokenizer.from_pretrained("C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\" + 'vocab.txt')
-
-    # PATH_SCHEMA = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\duie_data_process\\predicate_unicode.json"  # 应该是关系定义
-    # PATH_TRAIN = 'C:\\Users\\Aki\\source\\python\\CMeKG_tools\\duie_data_process\\duie_spo_train.json'  # 训练数据
+    # PATH_SCHEMA = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\predicate.json"  # 应该是关系定义
+    # PATH_TRAIN = 'C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\train.json'  # 训练数据
     # PATH_BERT = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\"
     # PATH_MODEL = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\model_re.pkl"
     # PATH_SAVE = 'C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_to_save\\model_re.pkl'
     # tokenizer = BertTokenizer.from_pretrained("C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\" + 'vocab.txt')
+
+    PATH_SCHEMA = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\duie_data_process\\predicate_unicode.json"  # 应该是关系定义
+    PATH_TRAIN = 'C:\\Users\\Aki\\source\\python\\CMeKG_tools\\duie_data_process\\duie_spo_train.json'  # 训练数据
+    PATH_BERT = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\"
+    PATH_MODEL = "C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\model_re.pkl"
+    PATH_SAVE = 'C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_to_save\\model_re.pkl'
+    tokenizer = BertTokenizer.from_pretrained("C:\\Users\\Aki\\source\\python\\CMeKG_tools\\model_re\\" + 'vocab.txt')
 
     id2predicate = {}
     predicate2id = {}
