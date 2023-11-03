@@ -393,14 +393,14 @@ def run_train():
     # train
     train_data_loader = IterableDataset(train_data, True)
     num_train_data = len(train_data)
-    checkpoint = torch.load(config.PATH_MODEL)
+    # checkpoint = torch.load(config.PATH_MODEL)
 
     model4s = Model4s()  # 预测subject(主体)
-    model4s.load_state_dict(checkpoint['model4s_state_dict'])
+    # model4s.load_state_dict(checkpoint['model4s_state_dict'])
     # model4s.cuda()
 
     model4po = Model4po()  # 预测predicate(谓语)和object(客体)
-    model4po.load_state_dict(checkpoint['model4po_state_dict'])
+    # model4po.load_state_dict(checkpoint['model4po_state_dict'])
     # model4po.cuda()
 
     param_optimizer = list(model4s.named_parameters()) + list(model4po.named_parameters())
@@ -412,7 +412,7 @@ def run_train():
 
     lr = config.learning_rate
     optimizer = AdamW(optimizer_grouped_parameters, lr=lr)
-    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    # optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
     checkpoint = train(train_data_loader, model4s, model4po, optimizer)  # 开始训练
 
